@@ -1,11 +1,13 @@
 const Todo = require('../models/Todos')
 
-
-
 const createTodo = async(req,res) => {
     const {userId} = req.user
     req.body.createdBy = userId
+    const {name,description,status} = req.body
     try {
+        if(!name || !description || typeof(status) !== "boolean"){
+            return res.status(404).send("Please provide name,description and status!")
+        }
         const todo = await Todo.create({
           ...req.body,
         });
@@ -18,36 +20,32 @@ const createTodo = async(req,res) => {
 const updateTodo = async(req,res) => {
     try {
         const {id} = req.query
-        const todo = await Todo.findByIdAndUpdate(
-            id,
-            {...req.body},
-            {new:true}
+        let todo = await Todo.findById(
+            id
         )
-        if(!todo){
-            return res.status(404).json({ message: 'Todo not found', error: '' }); 
-        }
-        return res.status(200).json(todo)
+        const {name,description,status} = req.body
+        todo.name = name,
+        todo.description = description
+        todo.status = status
+        const updatedTodo = await todo.save()
+        return res.status(200).json(updatedTodo)
     } catch (error) {
         res.status(400).json({
-            message: 'Error getting article',
+            message: 'Error getting todo',
             error: JSON.stringify(error),
-          });
+          });   
     }
 }
 
 const deleteTodo = async(req,res) => {
     try {
         const {id} = req.query
-        const todo = await Todo.findByIdAndRemove(
-            id
-        )
-        if(!todo){
-            return res.status(404).json({ message: 'Todo not found', error: '' }); 
-        }
-        return res.status(200).json(todo)
+        const deletedTodo = await Todo.findByIdAndRemove(id)
+        console.log(deleteTodo,"deleted")
+        return res.status(200).json(deletedTodo)
     } catch (error) {
         res.status(400).json({
-            message: 'Error getting article',
+            message: 'Error getting todo',
             error: JSON.stringify(error),
           });
     }
@@ -57,16 +55,15 @@ const deleteTodo = async(req,res) => {
 const getTodoById = async(req,res) => {
     try {
         const {id} = req.query
-        const todo = await Todo.findById(
-            id
-        )
-        if(!todo){
-            return res.status(404).json({ message: 'Todo not found', error: '' }); 
+        if(!id){
+            return res.status(404).json({ message: 'Please provide todo id'  }); 
         }
+        const todo = await Todo.findById(id)
         return res.status(200).json(todo)
     } catch (error) {
+        console.log(error,"errro")
         res.status(400).json({
-            message: 'Error getting article',
+            message: 'Error getting Todo',
             error: JSON.stringify(error),
           });
     }
@@ -74,13 +71,23 @@ const getTodoById = async(req,res) => {
 
 
 const getAllTodos = async(req,res) => {
+    function escapeRegex(text) {
+        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+    };
     try {
         const page= Number(req.query?.page) || 1
         const limit = Number(req.query?.limit) || 5
         const skip = (page - 1)*limit
-        const todo = await Todo.find().skip(skip).limit(limit)
+        const search = req.query?.search
+        if(search){
+            const regex = new RegExp(escapeRegex(search,'gi'))
+            const todos = await Todo.find({createdBy:req.user.userId,name:regex,description:regex})
+            return res.status(200).json(todos)
+        }
+        const todo = await Todo.find({createdBy:req.user.userId}).skip(skip).limit(limit)
         return res.status(200).json(todo)
     } catch (error) {
+        console.log(error)
         res.status(400).json({
             message: 'Error getting todo',
             error: JSON.stringify(error),
