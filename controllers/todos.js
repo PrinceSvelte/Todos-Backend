@@ -81,13 +81,13 @@ const getAllTodos = async(req,res) => {
         return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
     };
     try {
-        const page= Number(req.query?.page) || 1
+        const page= Number  (req.query?.page) || 1
         const limit = Number(req.query?.limit) || 5
         const skip = (page - 1)*limit
         const search = req.query?.search
         if(search){
-            const regex = new RegExp(escapeRegex(search,'gi'))
-            const todos = await Todo.find({createdBy:req.user.userId,name:regex,description:regex})
+            const regex = new RegExp(search,'gi')
+            const todos = await (await Todo.find({createdBy:req.user.userId})).filter((element,index) => regex.test(element))
             return res.status(200).json(todos)
         }
         const todo = await Todo.find({createdBy:req.user.userId}).skip(skip).limit(limit)
