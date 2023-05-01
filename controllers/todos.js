@@ -20,6 +20,9 @@ const createTodo = async(req,res) => {
 const updateTodo = async(req,res) => {
     try {
         const {id} = req.query
+        if(!id){
+            return res.status(404).send('Please provide todo id!'); 
+        }
         let todo = await Todo.findById(
             id
         )
@@ -40,6 +43,9 @@ const updateTodo = async(req,res) => {
 const deleteTodo = async(req,res) => {
     try {
         const {id} = req.query
+        if(!id){
+            return res.status(404).send('Please provide todo id!'); 
+        }
         const deletedTodo = await Todo.findByIdAndRemove(id)
         console.log(deleteTodo,"deleted")
         return res.status(200).json(deletedTodo)
