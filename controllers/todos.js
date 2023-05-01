@@ -87,7 +87,6 @@ const getAllTodos = async(req,res) => {
         const todo = await Todo.find({createdBy:req.user.userId}).skip(skip).limit(limit)
         return res.status(200).json(todo)
     } catch (error) {
-        console.log(error)
         res.status(400).json({
             message: 'Error getting todo',
             error: JSON.stringify(error),

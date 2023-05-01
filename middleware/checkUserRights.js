@@ -2,7 +2,7 @@ const Todo = require('../models/Todos')
 
 const checkUserRights = async function(req,res,next) {
     const {id} = req.query
-    if(req.originalUrl == '/api/v1/todo/create'){
+    if(req.originalUrl == '/api/v1/todo/create' || req.originalUrl == '/api/v1/todo/getAll' ){
         next()
         return
     }
