@@ -20,13 +20,16 @@ const createTodo = async(req,res) => {
 const updateTodo = async(req,res) => {
     try {
         const {id} = req.query
-        if(!id){
-            return res.status(404).send('Please provide todo id!'); 
-        }
         let todo = await Todo.findById(
             id
         )
+        if(!todo){
+            return res.status(404).send('Todo Not Found !');
+        }
         const {name,description,status} = req.body
+        if(!name || !description || typeof(status) !== "boolean"){
+            return res.status(404).send("Please provide name,description and status!")
+        }
         todo.name = name,
         todo.description = description
         todo.status = status
@@ -43,15 +46,11 @@ const updateTodo = async(req,res) => {
 const deleteTodo = async(req,res) => {
     try {
         const {id} = req.query
-        if(!id){
-            return res.status(404).send('Please provide todo id!'); 
-        }
         const deletedTodo = await Todo.findByIdAndRemove(id)
-        console.log(deleteTodo,"deleted")
         return res.status(200).json(deletedTodo)
     } catch (error) {
         res.status(400).json({
-            message: 'Error getting todo',
+            message: 'Error deleting todo',
             error: JSON.stringify(error),
           });
     }
@@ -61,10 +60,10 @@ const deleteTodo = async(req,res) => {
 const getTodoById = async(req,res) => {
     try {
         const {id} = req.query
-        if(!id){
-            return res.status(404).json({ message: 'Please provide todo id'  }); 
-        }
         const todo = await Todo.findById(id)
+        if(!todo){
+            return res.status(404).send('Todo Not Found !');
+        }
         return res.status(200).json(todo)
     } catch (error) {
         console.log(error,"errro")

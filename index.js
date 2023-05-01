@@ -5,14 +5,13 @@ const authRouter = require("./routes/auth")
 const todoRouter = require("./routes/todos")
 const cors = require("cors")
 const {auth} = require('./middleware/auth')
-const {checkUserRights } = require("./middleware/checkUserRights")
  const app = express()
 app.use(express.json())
 app.use(cors())
 
 //routes
 app.use('/api/v1/auth',authRouter)
-app.use('/api/v1/todo',auth,checkUserRights,todoRouter)
+app.use('/api/v1/todo',auth,todoRouter)
 
 
 
