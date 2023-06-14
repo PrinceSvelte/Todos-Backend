@@ -8,9 +8,13 @@ const checkUserRights = async function(req,res,next) {
     try{
     if(id){
     const todo = await Todo.findById(id)
+    if(!todo){
+        return res.status(404).send('Todo not found!');
+    }
     if(todo?.createdBy != req.user.userId){
         return res.status(401).send('You dont have permission to operate this todo !');
     }
+    next()
 }
     }catch(err){
         return res.status(404).send('Not Found !');
